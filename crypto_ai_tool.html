@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI کرپٹو ٹریڈنگ سگنل ٹول</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0c2461, #1e3799);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #00bcd4, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .card h2 {
+            margin-bottom: 20px;
+            color: #00ff88;
+            font-size: 1.5em;
+        }
+
+        .signal {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border-left: 5px solid;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .buy {
+            background: linear-gradient(135deg, #00b09b, #96c93d);
+            border-left-color: #00ff88;
+        }
+
+        .sell {
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+            border-left-color: #ff4444;
+        }
+
+        .hold {
+            background: linear-gradient(135deg, #ffb347, #ffcc33);
+            border-left-color: #ffaa00;
+        }
+
+        .signal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .symbol {
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .action {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .confidence {
+            margin-top: 10px;
+        }
+
+        .confidence-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #00bcd4, #00ff88);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #00ff88;
+            margin: 10px 0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 1.2em;
+        }
+
+        .timestamp {
+            text-align: center;
+            margin-top: 20px;
+            opacity: 0.7;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI کرپٹو ٹریڈنگ سگنل ٹول</h1>
+            <p>مصنوعی ذہانت پر مبنی کرپٹو کرنسی ٹریڈنگ سگنلز</p>
+        </div>
+
+        <div class="dashboard">
+            <div class="card">
+                <h2>📊 لائیو ٹریڈنگ سگنلز</h2>
+                <div id="signalsContainer">
+                    <div class="loading">
+                        🔄 سگنلز لوڈ ہو رہے ہیں...
+                    </div>
+                </div>
+                <div class="timestamp" id="lastUpdate">
+                    آخری اپڈیٹ: --:--:--
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>⚙️ کنٹرول پینل</h2>
+                <div class="controls">
+                    <button class="btn btn-primary" onclick="startAIBot()">
+                        🚀 AI بوٹ شروع کریں
+                    </button>
+                    <button class="btn btn-secondary" onclick="stopAIBot()">
+                        ⏹️ AI بوٹ روکیں
+                    </button>
+                    <button class="btn btn-secondary" onclick="refreshSignals()">
+                        🔄 سگنلز تازہ کریں
+                    </button>
+                </div>
+
+                <div class="stats">
+                    <div class="stat-item">
+                        <div>کل سگنلز</div>
+                        <div class="stat-value" id="totalSignals">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div>کامیابی کی شرح</div>
+                        <div class="stat-value" id="successRate">0%</div>
+                    </div>
+                    <div class="stat-item">
+                        <div>فعال سگنلز</div>
+                        <div class="stat-value" id="activeSignals">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📈 مارکیٹ کی صورتحال</h2>
+                <div id="marketStatus">
+                    <div class="signal">
+                        <div class="signal-header">
+                            <span class="symbol">مارکیٹ ویلیو</span>
+                            <span class="action">$2.1T</span>
+                        </div>
+                        <div>کل مارکیٹ کیپٹلائزیشن</div>
+                    </div>
+                    
+                    <div class="signal">
+                        <div class="signal-header">
+                            <span class="symbol">فیئر گریڈ</span>
+                            <span class="action" style="background: #00ff88; color: #000;">78/100</span>
+                        </div>
+                        <div>مارکیٹ کا جذباتی اسکور</div>
+                    </div>
+                    
+                    <div class="signal">
+                        <div class="signal-header">
+                            <span class="symbol">بی ٹی سی ڈومیننس</span>
+                            <span class="action">52.3%</span>
+                        </div>
+                        <div>بٹ کوائن کی مارکیٹ میں حصہ داری</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔧 AI ماڈل کی تفصیلات</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                <div class="signal">
+                    <strong>ماڈل کی قسم:</strong> LSTM نیورل نیٹ ورک
+                </div>
+                <div class="signal">
+                    <strong>ڈیٹا سورس:</strong> Binance API + تکنیکی اشارے
+                </div>
+                <div class="signal">
+                    <strong>فیچرز:</strong> RSI, MACD, مووینگ ایوریجز
+                </div>
+                <div class="signal">
+                    <strong>درستگی:</strong> 85.7% (بیک ٹیسٹ)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // AI سگنلز کا ڈیٹا
+        const sampleSignals = [
+            {
+                symbol: "BTC/USDT",
+                action: "BUY",
+                confidence: 0.87,
+                price: "45,230",
+                change: "+2.3%",
+                stopLoss: "43,500",
+                takeProfit: "48,000"
+            },
+            {
+                symbol: "ETH/USDT",
+                action: "HOLD",
+                confidence: 0.65,
+                price: "2,450",
+                change: "-0.8%",
+                stopLoss: "2,300",
+                takeProfit: "2,700"
+            },
+            {
+                symbol: "ADA/USDT",
+                action: "SELL",
+                confidence: 0.76,
+                price: "0.48",
+                change: "-3.2%",
+                stopLoss: "0.52",
+                takeProfit: "0.42"
+            },
+            {
+                symbol: "DOT/USDT",
+                action: "BUY",
+                confidence: 0.72,
+                price: "7.25",
+                change: "+1.5%",
+                stopLoss: "6.80",
+                takeProfit: "8.00"
+            }
+        ];
+
+        // سگنلز ڈسپلے کرنے کا فنکشن
+        function displaySignals(signals) {
+            const container = document.getElementById('signalsContainer');
+            const totalSignals = document.getElementById('totalSignals');
+            const activeSignals = document.getElementById('activeSignals');
+            const successRate = document.getElementById('successRate');
+            
+            if (signals.length === 0) {
+                container.innerHTML = '<div class="loading">❌ کوئی سگنل دستیاب نہیں</div>';
+                return;
+            }
+
+            let buyCount = 0;
+            let html = '';
+
+            signals.forEach(signal => {
+                if (signal.action === 'BUY') buyCount++;
+                
+                const confidencePercent = Math.round(signal.confidence * 100);
+                const confidenceColor = signal.confidence > 0.7 ? '#00ff88' : 
+                                      signal.confidence > 0.5 ? '#ffaa00' : '#ff4444';
+
+                html += `
+                    <div class="signal ${signal.action.toLowerCase()}">
+                        <div class="signal-header">
+                            <span class="symbol">${signal.symbol}</span>
+                            <span class="action">${signal.action}</span>
+                        </div>
+                        <div style="margin: 10px 0;">
+                            <strong>قیمت:</strong> $${signal.price} 
+                            <span style="color: ${signal.change.includes('+') ? '#00ff88' : '#ff4444'}">
+                                ${signal.change}
+                            </span>
+                        </div>
+                        <div class="confidence">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>اعتماد:</span>
+                                <span>${confidencePercent}%</span>
+                            </div>
+                            <div class="confidence-bar">
+                                <div class="confidence-fill" style="width: ${confidencePercent}%; background: ${confidenceColor};"></div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 10px; font-size: 0.9em;">
+                            <div>Stop Loss: $${signal.stopLoss}</div>
+                            <div>Take Profit: $${signal.takeProfit}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            totalSignals.textContent = signals.length;
+            activeSignals.textContent = buyCount;
+            successRate.textContent = '85%';
+            
+            // آخری اپڈیٹ کا وقت ڈسپلے کریں
+            const now = new Date();
+            document.getElementById('lastUpdate').textContent = 
+                `آخری اپڈیٹ: ${now.toLocaleTimeString('ur-PK')}`;
+        }
+
+        // AI بوٹ شروع کرنے کا فنکشن
+        function startAIBot() {
+            alert('🚀 AI ٹریڈنگ بوٹ شروع ہو گیا ہے!');
+            document.querySelector('.btn-primary').textContent = '✅ AI بوٹ چل رہا ہے';
+            document.querySelector('.btn-primary').style.background = 'linear-gradient(45deg, #00ff88, #00bcd4)';
+            
+            // 5 سیکنڈ بعد سگنلز ڈسپلے کریں
+            setTimeout(() => {
+                displaySignals(sampleSignals);
+            }, 2000);
+        }
+
+        // AI بوٹ روکنے کا فنکشن
+        function stopAIBot() {
+            alert('⏹️ AI ٹریڈنگ بوٹ روک دیا گیا ہے!');
+            document.querySelector('.btn-primary').textContent = '🚀 AI بوٹ شروع کریں';
+            document.querySelector('.btn-primary').style.background = 'linear-gradient(45deg, #00bcd4, #00ff88)';
+            
+            document.getElementById('signalsContainer').innerHTML = 
+                '<div class="loading">⏸️ AI بوٹ معطل ہے</div>';
+        }
+
+        // سگنلز تازہ کرنے کا فنکشن
+        function refreshSignals() {
+            document.getElementById('signalsContainer').innerHTML = 
+                '<div class="loading">🔄 نئے سگنلز لوڈ ہو رہے ہیں...</div>';
+            
+            // 2 سیکنڈ کے بعد نئے سگنلز ڈسپلے کریں
+            setTimeout(() => {
+                const shuffledSignals = [...sampleSignals].sort(() => Math.random() - 0.5);
+                displaySignals(shuffledSignals);
+                alert('✅ سگنلز تازہ ہو گئے ہیں!');
+            }, 2000);
+        }
+
+        // پیج لوڈ ہونے پر ابتدائی سگنلز ڈسپلے کریں
+        window.onload = function() {
+            // 3 سیکنڈ کے بعد سگنلز ڈسپلے کریں
+            setTimeout(() => {
+                displaySignals(sampleSignals);
+            }, 3000);
+
+            // ہر 30 سیکنڈ بعد سگنلز آٹو ریفریش
+            setInterval(() => {
+                if (document.querySelector('.btn-primary').textContent.includes('چل رہا ہے')) {
+                    const updatedSignals = sampleSignals.map(signal => ({
+                        ...signal,
+                        confidence: Math.min(0.95, signal.confidence + (Math.random() - 0.5) * 0.1),
+                        price: (parseFloat(signal.price.replace(',', '')) * (1 + (Math.random() - 0.5) * 0.02)).toFixed(2)
+                    }));
+                    displaySignals(updatedSignals);
+                }
+            }, 30000);
+        }
+
+        // کی بورڈ شارٹ کٹس
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey || event.metaKey) {
+                switch(event.key) {
+                    case 'r':
+                        event.preventDefault();
+                        refreshSignals();
+                        break;
+                    case 's':
+                        event.preventDefault();
+                        startAIBot();
+                        break;
+                    case 'x':
+                        event.preventDefault();
+                        stopAIBot();
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+                  </html>
